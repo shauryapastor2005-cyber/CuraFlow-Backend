@@ -2,7 +2,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
 
-import { User } from "../models/user.model.js";
+import { User } from "../models/users.model.js";
 
 // Middleware whose purpose is to convert an anonymous request
 // into an authenticated request by attaching req.user

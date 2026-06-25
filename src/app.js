@@ -25,7 +25,17 @@ app.get("/", (req, res) => {
 
 //routes declaration using middleware
 import userRouter from "./routes/user.routes.js";
-
 app.use("/api/v1/users", userRouter);
+
+import patientRouter from "./routes/patients.routes.js";
+app.use("/api/v1/patients", patientRouter);
+
+import prescriptionRouter, {
+  prescriptionNestedRouter,
+} from "./routes/prescription.routes.js";
+
+// Keep the existing mount and add the nested one:
+app.use("/api/v1/prescriptions", prescriptionRouter);
+app.use("/api/v1/patients/:patientId/prescriptions", prescriptionNestedRouter);
 
 export default app;
