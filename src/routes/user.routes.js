@@ -15,15 +15,6 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 const router = Router();
 
 router.route("/register").post(
-  // WE HAVE DONE NOTHING
-  // JUST ADDED OUR MULTER MIDDLEWARE
-  // INSIDE ROUTES
-  // SO NOW WHEN WE CALL REQ.BODY WE
-  //GET SOME MORE FIELDS FOR HANDLING
-  //IMAGES AND VIDEOS
-  // see we added files fields names avatar and coverimage
-  // so now when we call req.body we have now additional fields .avatar
-  //this part is handling the file upload in step 1 of retreiving user data
   upload.fields([
     {
       name: "avatar",
@@ -40,24 +31,14 @@ router.route("/register").post(
 router.route("/login").post(loginUser);
 
 //secured routes
-router.route("/logout").post(
-  verifyJWT, // Protect this route. Middleware verifies access token,
-
-  // ensures the user still exists in DB,
-
-  // and attaches the authenticated user object to req.user.
-
-  // If any check fails, request is rejected before reaching logoutUser.
-
-  logoutUser
-);
+router.route("/logout").post(verifyJWT, logoutUser);
 //secured route
-router.route("/change-password").post(verifyJWT, changeCurrentPassword);
+router.route("/change-password").patch(verifyJWT, changeCurrentPassword);
 
 router.route("/refresh-token").post(refreshAccessToken);
 
 //secured route
-router.route("/current-user").post(verifyJWT, getCurrentUser);
+router.route("/current-user").get(verifyJWT, getCurrentUser);
 router.route("/update-user-details").patch(verifyJWT, updateUserDetails);
 
 //secure + multer middleware

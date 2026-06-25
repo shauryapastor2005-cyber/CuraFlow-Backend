@@ -30,12 +30,13 @@ const createPrescription = asyncHandler(async (req, res) => {
     startDate,
     endDate,
     instructions,
+    doctorName,
   } = req.body;
 
-  if (!medicineName || !dosage || !frequency || !startDate) {
+  if (!medicineName || !dosage || !frequency || !startDate || !doctorName) {
     throw new ApiError(
       400,
-      "medicineName, dosage, frequency, and startDate are required"
+      "medicineName, dosage, frequency, doctor's name and startDate are required"
     );
   }
 
@@ -57,6 +58,7 @@ const createPrescription = asyncHandler(async (req, res) => {
     startDate,
     endDate,
     instructions,
+    doctorName,
   });
 
   return res
@@ -85,10 +87,6 @@ const getAllPrescriptions = asyncHandler(async (req, res) => {
     .select("-patient");
 
   const total = await Prescription.countDocuments(filter);
-
-  if (prescriptions.length === 0) {
-    throw new ApiError(400, "no prescription found.");
-  }
 
   return res.status(200).json(
     new ApiResponse(
@@ -152,6 +150,7 @@ const updatePrescription = asyncHandler(async (req, res) => {
     startDate,
     endDate,
     instructions,
+    doctorName,
   } = req.body;
 
   const resolvedStartDate = startDate
@@ -163,6 +162,7 @@ const updatePrescription = asyncHandler(async (req, res) => {
     throw new ApiError(400, "End date cannot be earlier than start date");
   }
 
+  if (doctorName !== undefined) prescription.doctorName = doctorName;
   if (medicineName !== undefined) prescription.medicineName = medicineName;
   if (dosage !== undefined) prescription.dosage = dosage;
   if (frequency !== undefined) prescription.frequency = frequency;
@@ -202,10 +202,120 @@ const deletePrescription = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Prescription deleted successfully"));
 });
 
+//can search whether given patient has this prescription or not
+const searchMedicine = asyncHandler(async (req, res) => {
+  const { patientId } = req.params;
+  const { medicine } = req.query;
+
+  if (!medicine) {
+    throw new ApiError(400, "medicine query parameter is required");
+  }
+
+  await verifyPatientOwnership(patientId, req.user._id);
+
+  const prescriptions = await Prescription.find({
+    patient: patientId,
+    medicineName: { $regex: medicine, $options: "i" },
+    isActive: true,
+  }).sort({ createdAt: -1 });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, prescriptions, "Search results fetched successfully")
+    );
+});
+
+//returns all active prescription going on
+const getCurrentMedicines = asyncHandler(async (req, res) => {
+  const { patientId } = req.params;
+
+  await verifyPatientOwnership(patientId, req.user._id);
+
+  const today = new Date();
+
+  const prescriptions = await Prescription.find({
+    patient: patientId,
+    isActive: true,
+    startDate: { $lte: today },
+    $or: [{ endDate: { $gte: today } }, { endDate: null }],
+  }).sort({ createdAt: -1 });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        prescriptions,
+        "Current medicines fetched successfully"
+      )
+    );
+});
+
+//gives timeline of a medicine i.e past history
+const getMedicineTimeline = asyncHandler(async (req, res) => {
+  const { patientId } = req.params;
+  const { medicine } = req.query;
+
+  if (!medicine) {
+    throw new ApiError(400, "medicine query parameter is required");
+  }
+
+  await verifyPatientOwnership(patientId, req.user._id);
+
+  const prescriptions = await Prescription.find({
+    patient: patientId,
+    medicineName: { $regex: medicine, $options: "i" },
+    isActive: true,
+  }).sort({ startDate: -1 });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        prescriptions,
+        "Medicine timeline fetched successfully"
+      )
+    );
+});
+
+//returns medicines expiring in next N days
+const getExpiringMedicines = asyncHandler(async (req, res) => {
+  const { patientId } = req.params;
+  const days = Math.max(1, parseInt(req.query.days) || 7);
+
+  const today = new Date();
+  const cutoff = new Date();
+  cutoff.setDate(today.getDate() + days);
+
+  await verifyPatientOwnership(patientId, req.user._id);
+
+  const prescriptions = await Prescription.find({
+    patient: patientId,
+    isActive: true,
+    endDate: { $gte: today, $lte: cutoff },
+  }).sort({ endDate: 1 });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        prescriptions,
+        "Expiring medicines fetched successfully"
+      )
+    );
+});
+
 export {
   createPrescription,
   getAllPrescriptions,
   getPrescriptionById,
   updatePrescription,
   deletePrescription,
+  searchMedicine,
+  getCurrentMedicines,
+  getMedicineTimeline,
+  getExpiringMedicines,
 };

@@ -40,11 +40,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "username or email already exists");
   }
 
-  // we already added multer middleware in user routes
-  // so now we have access to files
-  // we ? to as optional chaining operator to check if it is defined then only proceed
-  const avatarLocalPath = req.files?.avatar?.[0]?.path; // in avatar[0] we mean field's first property as we get a option for accessing path of the path
-  //   console.log("avatarLocalPath: ", avatarLocalPath);
+  const avatarLocalPath = req.files?.avatar?.[0]?.path;
   const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
   //   console.log("coverImageLocalPath: ", coverImageLocalPath);
 
@@ -62,11 +58,6 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(500, "failed to upload");
   }
 
-  //see we are done till step5 now we can safely create a user
-  //step 6 creating the user
-  //since we registering user in DB so it would take time
-  //therefore we must user await and wrap in user var
-
   const user = await User.create({
     fullname,
     username: username.toLowerCase(),
@@ -76,19 +67,12 @@ const registerUser = asyncHandler(async (req, res) => {
     password: password,
   });
 
-  //check whether user is created or not
-  //below User.findById(user._id) returns user in db with this id
-  //.select(write fields that you dont want)
-  //so overall User.findById(user._id).select("-password -refreshToken ")//return user but without these two fields
-  // remember why we dont need password and , refresh token
   const createdUser = await User.findById(user._id).select(
     "-password -refreshToken"
-  ); //we should always use await as db calls may take some time
+  );
   if (!createdUser) {
     throw new ApiError(500, "Something went wrong while registering the user");
   }
-
-  //finally we are at step 9 to return the response
 
   return res
     .status(201)
@@ -297,9 +281,6 @@ const updateUserDetails = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "details updated successfully"));
 });
 
-//always write a separate controller for updating files
-//think which middlewares would be required
-//first multer for handling file and second is auth
 const updateUserAvatar = asyncHandler(async (req, res) => {
   const avatarLocalPath = req.files?.avatar?.[0]?.path;
 

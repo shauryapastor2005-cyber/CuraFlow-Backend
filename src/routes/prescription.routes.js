@@ -5,6 +5,10 @@ import {
   getPrescriptionById,
   updatePrescription,
   deletePrescription,
+  searchMedicine,
+  getCurrentMedicines,
+  getMedicineTimeline,
+  getExpiringMedicines,
 } from "../controllers/prescription.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -23,5 +27,9 @@ const nestedRouter = Router({ mergeParams: true });
 nestedRouter.use(verifyJWT);
 
 nestedRouter.route("/").post(createPrescription).get(getAllPrescriptions);
+nestedRouter.get("/search", searchMedicine);
+nestedRouter.get("/current", getCurrentMedicines);
+nestedRouter.get("/history", getMedicineTimeline);
+nestedRouter.get("/expiring", getExpiringMedicines);
 
 export { router as default, nestedRouter as prescriptionNestedRouter };
