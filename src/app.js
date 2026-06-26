@@ -33,9 +33,15 @@ app.use("/api/v1/patients", patientRouter);
 import prescriptionRouter, {
   prescriptionNestedRouter,
 } from "./routes/prescription.routes.js";
-
 // Keep the existing mount and add the nested one:
 app.use("/api/v1/prescriptions", prescriptionRouter);
 app.use("/api/v1/patients/:patientId/prescriptions", prescriptionNestedRouter);
+
+import {
+  dailyLogRouter,
+  patientDailyLogRouter,
+} from "./routes/dailyLog.routes.js";
+app.use("/api/v1/logs", dailyLogRouter);
+app.use("/api/v1/patients/:patientId/logs", patientDailyLogRouter);
 
 export default app;

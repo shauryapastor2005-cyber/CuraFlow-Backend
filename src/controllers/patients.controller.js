@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Patient } from "../models/patients.model.js";
-
+import { verifyPatientOwnership } from "../utils/verifyPatientOwnership.js";
 const createPatient = asyncHandler(async (req, res) => {
   const {
     fullname,
@@ -94,15 +94,7 @@ const getAllPatients = asyncHandler(async (req, res) => {
 const getPatientById = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
-  const patient = await Patient.findOne({
-    _id: patientId,
-    caregiver: req.user._id, //it hints we must use verifyJWT middleware to verify the user
-    isActive: true,
-  });
-
-  if (!patient) {
-    throw new ApiError(404, "Patient not found");
-  }
+  const patient = await verifyPatientOwnership(patientId, req.user._id);
 
   return res
     .status(200)
@@ -124,15 +116,7 @@ const updatePatient = asyncHandler(async (req, res) => {
     notes,
   } = req.body;
 
-  const patient = await Patient.findOne({
-    _id: patientId,
-    caregiver: req.user._id,
-    isActive: true,
-  });
-
-  if (!patient) {
-    throw new ApiError(404, "Patient not found");
-  }
+  const patient = await verifyPatientOwnership(patientId, req.user._id);
 
   if (fullname !== undefined) patient.fullname = fullname;
   if (dateOfBirth !== undefined) patient.dateOfBirth = dateOfBirth;
@@ -155,15 +139,7 @@ const updatePatient = asyncHandler(async (req, res) => {
 const deletePatient = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
-  const patient = await Patient.findOne({
-    _id: patientId,
-    caregiver: req.user._id,
-    isActive: true,
-  });
-
-  if (!patient) {
-    throw new ApiError(404, "Patient not found");
-  }
+  const patient = await verifyPatientOwnership(patientId, req.user._id);
 
   patient.isActive = false;
   await patient.save();

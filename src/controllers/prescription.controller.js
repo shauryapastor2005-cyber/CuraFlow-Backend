@@ -3,21 +3,7 @@ import { Patient } from "../models/patients.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-
-//helper function to verify patient ownership
-const verifyPatientOwnership = async (patientId, caregiverId) => {
-  const patient = await Patient.findOne({
-    _id: patientId,
-    caregiver: caregiverId,
-    isActive: true,
-  });
-
-  if (!patient) {
-    throw new ApiError(404, "Patient not found or access denied");
-  }
-
-  return patient;
-};
+import { verifyPatientOwnership } from "../utils/verifyPatientOwnership.js";
 
 const createPrescription = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
