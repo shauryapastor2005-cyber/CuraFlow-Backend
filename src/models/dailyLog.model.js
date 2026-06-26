@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import { normalizeToMidnightUTC } from "../utils/normalizeToMidnightUTC.js";
 
 const dailyLogSchema = new Schema(
   {
@@ -65,16 +66,6 @@ const dailyLogSchema = new Schema(
     timestamps: true,
   }
 );
-
-/*
-  Normalize the date to midnight UTC so different timestamps
-  on the same day are treated as a single calendar date.
-*/
-function normalizeToMidnightUTC(value) {
-  const normalized = new Date(value);
-  normalized.setUTCHours(0, 0, 0, 0);
-  return normalized;
-}
 
 dailyLogSchema.pre("validate", function () {
   if (this.date) {

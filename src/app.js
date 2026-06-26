@@ -30,10 +30,11 @@ app.use("/api/v1/users", userRouter);
 import patientRouter from "./routes/patients.routes.js";
 app.use("/api/v1/patients", patientRouter);
 
-import prescriptionRouter, {
+import {
+  prescriptionRouter,
   prescriptionNestedRouter,
 } from "./routes/prescription.routes.js";
-// Keep the existing mount and add the nested one:
+
 app.use("/api/v1/prescriptions", prescriptionRouter);
 app.use("/api/v1/patients/:patientId/prescriptions", prescriptionNestedRouter);
 
@@ -44,4 +45,8 @@ import {
 app.use("/api/v1/logs", dailyLogRouter);
 app.use("/api/v1/patients/:patientId/logs", patientDailyLogRouter);
 
+import { vitalRouter, patientVitalRouter } from "./routes/vital.routes.js";
+
+app.use("/api/v1/vitals", vitalRouter);
+app.use("/api/v1/patients/:patientId/vitals", patientVitalRouter);
 export default app;
