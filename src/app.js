@@ -65,4 +65,11 @@ import { reportRouter, patientReportRouter } from "./routes/report.routes.js";
 
 app.use("/api/v1/reports", reportRouter);
 app.use("/api/v1/patients/:patientId/reports", patientReportRouter);
+
+import dashboardRouter, {
+  patientDashboardRouter,
+} from "./routes/dashboard.routes.js";
+app.use("/api/v1/dashboard", dashboardRouter);
+app.use("/api/v1/patients/:patientId/dashboard", patientDashboardRouter);
+
 export default app;
