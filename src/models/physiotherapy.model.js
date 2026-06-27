@@ -10,12 +10,10 @@ const exerciseSchema = new Schema(
       trim: true,
       maxlength: 100,
     },
-    // Duration (in minutes)
     duration: {
       type: Number,
       min: 0,
     },
-    //completion status
     completed: {
       type: Boolean,
       default: false,
@@ -24,7 +22,6 @@ const exerciseSchema = new Schema(
       type: String,
       enum: ["None", "Mild", "Moderate", "Severe"],
     },
-    //difficulty of exercise
     difficulty: {
       type: String,
       enum: ["Easy", "Moderate", "Difficult"],
@@ -36,27 +33,20 @@ const exerciseSchema = new Schema(
 //schema for physio
 const physiotherapySchema = new Schema(
   {
-    // The patient this session belongs to
     patient: {
       type: Schema.Types.ObjectId,
       ref: "Patient",
       required: true,
     },
-
-    // The care-giver / user who recorded the session
     recordedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-
-    // Calendar day of the session (always stored as midnight UTC)
     date: {
       type: Date,
       required: true,
     },
-    // Exercises performed during this session
-    // Each object represents one exercise on the day
     exercises: {
       type: [exerciseSchema],
       required: true,
@@ -65,13 +55,11 @@ const physiotherapySchema = new Schema(
         message: "At least one exercise is required.",
       },
     },
-    // remarks
     notes: {
       type: String,
       trim: true,
       maxlength: 1000,
     },
-    // soft delete
     isActive: {
       type: Boolean,
       default: true,
