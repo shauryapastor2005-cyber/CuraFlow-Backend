@@ -49,4 +49,20 @@ import { vitalRouter, patientVitalRouter } from "./routes/vital.routes.js";
 
 app.use("/api/v1/vitals", vitalRouter);
 app.use("/api/v1/patients/:patientId/vitals", patientVitalRouter);
+
+import {
+  physiotherapyRouter,
+  patientPhysiotherapyRouter,
+} from "./routes/physiotherapy.routes.js";
+
+app.use("/api/v1/physiotherapy", physiotherapyRouter);
+app.use(
+  "/api/v1/patients/:patientId/physiotherapy",
+  patientPhysiotherapyRouter
+);
+
+import { reportRouter, patientReportRouter } from "./routes/report.routes.js";
+
+app.use("/api/v1/reports", reportRouter);
+app.use("/api/v1/patients/:patientId/reports", patientReportRouter);
 export default app;

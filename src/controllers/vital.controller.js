@@ -90,7 +90,13 @@ const getPatientVitals = asyncHandler(async (req, res) => {
 
     return res
       .status(200)
-      .json(new ApiResponse(200, vital, "Vitals fetched successfully"));
+      .json(
+        new ApiResponse(
+          200,
+          vital,
+          vital.length ? "Vitals fetched successfully" : "No vitals found"
+        )
+      );
   }
 
   const pageNumber = Math.max(parseInt(page, 10) || 1, 1); //parse string from beginning and stops at first non int char and convert it to decimal as parseint(string,radix),radix =10 or base =10
@@ -121,7 +127,7 @@ const getPatientVitals = asyncHandler(async (req, res) => {
           currentPage: pageNumber,
         },
       },
-      "Vitals fetched successfully"
+      vitals.length ? "Vitals fetched successfully" : "No vitals found"
     )
   );
 });
@@ -144,7 +150,13 @@ const getVitalById = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, vital, "Vital record fetched successfully"));
+    .json(
+      new ApiResponse(
+        200,
+        vital,
+        "Vital record fetched successfully"
+      )
+    );
 });
 
 const updateVital = asyncHandler(async (req, res) => {
@@ -163,12 +175,18 @@ const updateVital = asyncHandler(async (req, res) => {
 
   await verifyPatientOwnership(vital.patient, req.user._id);
 
+  let hasUpdate = false;
+
   ALLOWED_UPDATE_FIELDS.forEach((field) => {
     if (req.body[field] !== undefined) {
       vital[field] = req.body[field];
+      hasUpdate = true;
     }
   });
 
+  if (!hasUpdate) {
+    throw new ApiError(400, "No valid fields provided for update");
+  }
   // save() triggers pre("validate") — runs date normalization middleware
   try {
     await vital.save();
@@ -221,14 +239,16 @@ const getTodayVital = asyncHandler(async (req, res) => {
     isActive: true,
   });
 
-  if (!vital) {
-    throw new ApiError(404, "No vital record found for today");
-  }
-
   return res
     .status(200)
     .json(
-      new ApiResponse(200, vital, "Today's vital record fetched successfully")
+      new ApiResponse(
+        200,
+        vital,
+        vital
+          ? "Today's vital record fetched successfully"
+          : "No vital records found today"
+      )
     );
 });
 
@@ -251,7 +271,15 @@ const getWeeklyVitals = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, vitals, "Weekly vitals fetched successfully"));
+    .json(
+      new ApiResponse(
+        200,
+        vitals,
+        vitals.length
+          ? "Weekly vitals fetched successfully"
+          : "No weekly vitals found"
+      )
+    );
 });
 
 export {

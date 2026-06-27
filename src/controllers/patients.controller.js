@@ -85,7 +85,7 @@ const getAllPatients = asyncHandler(async (req, res) => {
           totalPages: Math.ceil(total / limitNum),
         },
       },
-      "Patients fetched successfully"
+      patients.length ? "Patients fetched successfully" : "No patients found"
     )
   );
 });

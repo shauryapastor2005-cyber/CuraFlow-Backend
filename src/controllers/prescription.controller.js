@@ -86,7 +86,9 @@ const getAllPrescriptions = asyncHandler(async (req, res) => {
           totalPages: Math.ceil(total / limitNum),
         },
       },
-      "Prescriptions fetched successfully"
+      prescriptions.length
+        ? "Prescriptions fetched successfully"
+        : "No prescriptions found"
     )
   );
 });
@@ -208,7 +210,13 @@ const searchMedicine = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(
-      new ApiResponse(200, prescriptions, "Search results fetched successfully")
+      new ApiResponse(
+        200,
+        prescriptions,
+        prescriptions.length
+          ? "Search results fetched successfully"
+          : "No search results found"
+      )
     );
 });
 
@@ -233,7 +241,9 @@ const getCurrentMedicines = asyncHandler(async (req, res) => {
       new ApiResponse(
         200,
         prescriptions,
-        "Current medicines fetched successfully"
+        prescriptions.length
+          ? "Current medicines fetched successfully"
+          : "No current medicines found"
       )
     );
 });
@@ -261,7 +271,9 @@ const getMedicineTimeline = asyncHandler(async (req, res) => {
       new ApiResponse(
         200,
         prescriptions,
-        "Medicine timeline fetched successfully"
+        prescriptions.length
+          ? "Medicine timeline fetched successfully"
+          : "No medicine timeline found"
       )
     );
 });
@@ -289,7 +301,9 @@ const getExpiringMedicines = asyncHandler(async (req, res) => {
       new ApiResponse(
         200,
         prescriptions,
-        "Expiring medicines fetched successfully"
+        prescriptions.length
+          ? "Expiring medicines fetched successfully"
+          : "No expiring medicines found"
       )
     );
 });

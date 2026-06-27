@@ -83,18 +83,29 @@ const getPatientLogs = asyncHandler(async (req, res) => {
 
   // range query handling
   if (startDate && endDate) {
+    const start = new Date(startDate);
+    start.setUTCHours(0, 0, 0, 0);
+    const end = new Date(endDate);
+    end.setUTCHours(0, 0, 0, 0);
+
     const logs = await DailyLog.find({
       patient: patientId,
       isActive: true,
       date: {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate),
+        $gte: start,
+        $lte: end,
       },
     }).sort({ date: -1 });
 
     return res
       .status(200)
-      .json(new ApiResponse(200, logs, "Daily logs fetched successfully"));
+      .json(
+        new ApiResponse(
+          200,
+          logs,
+          logs.length ? "Daily logs fetched successfully" : "No logs found"
+        )
+      );
   }
 
   // default paginated response
@@ -121,7 +132,7 @@ const getPatientLogs = asyncHandler(async (req, res) => {
           totalPages: Math.ceil(totalLogs / pageLimit),
         },
       },
-      "Daily logs fetched successfully"
+      logs.length ? "Daily logs fetched successfully" : "No logs found"
     )
   );
 });
@@ -144,7 +155,13 @@ const getDailyLogById = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, dailyLog, "Daily log fetched successfully"));
+    .json(
+      new ApiResponse(
+        200,
+        dailyLog,
+        "Daily log fetched successfully"
+      )
+    );
 });
 
 const updateDailyLog = asyncHandler(async (req, res) => {
@@ -161,13 +178,20 @@ const updateDailyLog = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Daily log not found");
   }
 
+  //verify ownership
   await verifyPatientOwnership(dailyLog.patient, req.user._id);
 
+  let hasUpdate = false;
   ALLOWED_UPDATE_FIELDS.forEach((field) => {
     if (req.body[field] !== undefined) {
       dailyLog[field] = req.body[field];
+      hasUpdate = true;
     }
   });
+
+  if (!hasUpdate) {
+    throw new ApiError(400, "No valid fields provided for update");
+  }
 
   try {
     await dailyLog.save(); //DB WILL SAVE THIS AND OUR HOOKS WILL HANDLE IF DUPLICATE DATE IS ENTERED
@@ -224,14 +248,16 @@ const getTodayLog = asyncHandler(async (req, res) => {
     date: today,
   });
 
-  if (!todayLog) {
-    throw new ApiError(404, "No daily log found for today");
-  }
-
   return res
     .status(200)
     .json(
-      new ApiResponse(200, todayLog, "Today's daily log fetched successfully")
+      new ApiResponse(
+        200,
+        todayLog,
+        todayLog
+          ? "Today's daily log fetched successfully"
+          : "No new log is created today."
+      )
     );
 });
 
@@ -254,7 +280,15 @@ const getWeeklyLogs = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, weeklyLogs, "Weekly logs fetched successfully"));
+    .json(
+      new ApiResponse(
+        200,
+        weeklyLogs,
+        weeklyLogs.length
+          ? "Weekly logs fetched successfully"
+          : "no weekly logs found"
+      )
+    );
 });
 
 const getMissedMedicines = asyncHandler(async (req, res) => {
@@ -274,7 +308,9 @@ const getMissedMedicines = asyncHandler(async (req, res) => {
       new ApiResponse(
         200,
         missedLogs,
-        "Missed medicine logs fetched successfully"
+        missedLogs.length
+          ? "Missed medicine logs fetched successfully"
+          : "no medicines missed"
       )
     );
 });
