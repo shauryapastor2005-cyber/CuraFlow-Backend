@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { normalizeToMidnightUTC } from "../utils/normalizeToMidnightUTC.js";
+import { validateDateNotInFuture } from "../utils/validateDateNotInFuture.js";
 
 const vitalSchema = new Schema(
   {
@@ -84,6 +85,10 @@ const vitalSchema = new Schema(
 vitalSchema.pre("validate", function () {
   if (this.date) {
     this.date = normalizeToMidnightUTC(this.date);
+    validateDateNotInFuture(
+      this.date,
+      "Vital record date cannot be in the future."
+    );
   }
 });
 
@@ -92,8 +97,16 @@ vitalSchema.pre("findOneAndUpdate", function () {
 
   if (update?.date) {
     update.date = normalizeToMidnightUTC(update.date);
+    validateDateNotInFuture(
+      update.date,
+      "Vital record date cannot be in the future."
+    );
   } else if (update?.$set?.date) {
     update.$set.date = normalizeToMidnightUTC(update.$set.date);
+    validateDateNotInFuture(
+      update.$set.date,
+      "Vital record date cannot be in the future."
+    );
   }
 });
 

@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { normalizeToMidnightUTC } from "../utils/normalizeToMidnightUTC.js";
+import { validateDateNotInFuture } from "../utils/validateDateNotInFuture.js";
 
 const dailyLogSchema = new Schema(
   {
@@ -70,6 +71,10 @@ const dailyLogSchema = new Schema(
 dailyLogSchema.pre("validate", function () {
   if (this.date) {
     this.date = normalizeToMidnightUTC(this.date);
+    validateDateNotInFuture(
+      this.date,
+      "Daily log date cannot be in the future."
+    );
   }
 });
 
@@ -82,8 +87,16 @@ dailyLogSchema.pre("findOneAndUpdate", function () {
 
   if (update?.date) {
     update.date = normalizeToMidnightUTC(update.date);
+    validateDateNotInFuture(
+      update.date,
+      "Daily log date cannot be in the future."
+    );
   } else if (update?.$set?.date) {
     update.$set.date = normalizeToMidnightUTC(update.$set.date);
+    validateDateNotInFuture(
+      update.$set.date,
+      "Daily log date cannot be in the future."
+    );
   }
 });
 

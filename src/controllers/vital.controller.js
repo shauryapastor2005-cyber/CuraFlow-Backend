@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { verifyPatientOwnership } from "../utils/verifyPatientOwnership.js";
 import { Vital } from "../models/vital.model.js";
+import { validateDateNotInFuture } from "../utils/validateDateNotInFuture.js";
 
 const ALLOWED_UPDATE_FIELDS = [
   "date",
@@ -36,6 +37,8 @@ const createVital = asyncHandler(async (req, res) => {
   if (!date) {
     throw new ApiError(400, "Date is required");
   }
+
+  validateDateNotInFuture(date, "Vital record date cannot be in the future.");
 
   try {
     const vital = await Vital.create({
@@ -74,6 +77,8 @@ const getPatientVitals = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10, startDate, endDate } = req.query;
 
   if (startDate && endDate) {
+    validateDateNotInFuture(startDate, "Start date cannot be in the future.");
+
     const start = new Date(startDate);
     start.setUTCHours(0, 0, 0, 0);
 
@@ -150,13 +155,7 @@ const getVitalById = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        vital,
-        "Vital record fetched successfully"
-      )
-    );
+    .json(new ApiResponse(200, vital, "Vital record fetched successfully"));
 });
 
 const updateVital = asyncHandler(async (req, res) => {
@@ -174,6 +173,13 @@ const updateVital = asyncHandler(async (req, res) => {
   }
 
   await verifyPatientOwnership(vital.patient, req.user._id);
+
+  if (req.body.date !== undefined) {
+    validateDateNotInFuture(
+      req.body.date,
+      "Vital record date cannot be in the future."
+    );
+  }
 
   let hasUpdate = false;
 
@@ -282,6 +288,91 @@ const getWeeklyVitals = asyncHandler(async (req, res) => {
     );
 });
 
+const getVitalAnalytics = asyncHandler(async (req, res) => {
+  const { patientId } = req.params;
+  const { range = "week" } = req.query; //default query is week
+
+  const patient = await verifyPatientOwnership(patientId, req.user._id);
+
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+
+  const dateFilter = {
+    $lte: today,
+  };
+
+  if (range === "week") {
+    const sixDaysAgo = new Date(today);
+    sixDaysAgo.setUTCDate(today.getUTCDate() - 6);
+    dateFilter.$gte = sixDaysAgo;
+  } else if (range === "month") {
+    const twentyNineDaysAgo = new Date(today);
+    twentyNineDaysAgo.setUTCDate(today.getUTCDate() - 29);
+    dateFilter.$gte = twentyNineDaysAgo;
+  } else if (range === "6months") {
+    const oneHundredEightyDaysAgo = new Date(today);
+    oneHundredEightyDaysAgo.setUTCDate(today.getUTCDate() - 180);
+    dateFilter.$gte = oneHundredEightyDaysAgo;
+  } else if (range !== "all") {
+    throw new ApiError(400, "Invalid range");
+  }
+
+  const matchFilter = {
+    patient: patient._id,
+    isActive: true,
+    date: dateFilter,
+  };
+
+  const [summaryResult, history] = await Promise.all([
+    Vital.aggregate([
+      {
+        $match: matchFilter,
+      },
+      {
+        $group: {
+          _id: null,
+          totalRecords: { $sum: 1 },
+          averageBloodPressureSystolic: { $avg: "$bloodPressureSystolic" },
+          averageBloodPressureDiastolic: { $avg: "$bloodPressureDiastolic" },
+          averageHeartRate: { $avg: "$heartRate" },
+          averageTemperature: { $avg: "$temperature" },
+          averageOxygenSaturation: { $avg: "$oxygenSaturation" },
+          averageBloodSugar: { $avg: "$bloodSugar" },
+          averageWeight: { $avg: "$weight" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalRecords: 1,
+          averageBloodPressure: {
+            systolic: "$averageBloodPressureSystolic",
+            diastolic: "$averageBloodPressureDiastolic",
+          },
+          averageHeartRate: 1,
+          averageTemperature: 1,
+          averageOxygenSaturation: 1,
+          averageBloodSugar: 1,
+          averageWeight: 1,
+        },
+      },
+    ]),
+    Vital.find(matchFilter).sort({ date: -1 }),
+  ]);
+
+  const analytics = {
+    range,
+    summary: summaryResult[0] || null,
+    history, //it is purely frontend design decision to return history for future frontend integration
+  };
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, analytics, "Vital analytics fetched successfully")
+    );
+});
+
 export {
   createVital,
   getPatientVitals,
@@ -290,4 +381,5 @@ export {
   deleteVital,
   getTodayVital,
   getWeeklyVitals,
+  getVitalAnalytics,
 };

@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { verifyPatientOwnership } from "../utils/verifyPatientOwnership.js";
+import { validateDateNotInFuture } from "../utils/validateDateNotInFuture.js";
 
 const ALLOWED_UPDATE_FIELDS = ["date", "exercises", "notes"];
 
@@ -17,6 +18,11 @@ const createPhysiotherapy = asyncHandler(async (req, res) => {
   if (!date) {
     throw new ApiError(400, "Date is required");
   }
+
+  validateDateNotInFuture(
+    date,
+    "Physiotherapy session date cannot be in the future."
+  );
 
   try {
     const physiotherapy = await Physiotherapy.create({
@@ -59,6 +65,8 @@ const getPatientPhysiotherapy = asyncHandler(async (req, res) => {
   const { startDate, endDate } = req.query;
   // Build date range filter
   if (startDate && endDate) {
+    validateDateNotInFuture(startDate, "Start date cannot be in the future.");
+
     const start = new Date(startDate);
     start.setUTCHours(0, 0, 0, 0);
     const end = new Date(endDate);
@@ -158,6 +166,13 @@ const updatePhysiotherapy = asyncHandler(async (req, res) => {
 
   // Verify ownership
   await verifyPatientOwnership(physiotherapy.patient, req.user._id);
+
+  if (req.body.date !== undefined) {
+    validateDateNotInFuture(
+      req.body.date,
+      "Physiotherapy session date cannot be in the future."
+    );
+  }
 
   // Apply only allowed fields
   let hasUpdate = false;

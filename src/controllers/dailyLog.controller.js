@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { verifyPatientOwnership } from "../utils/verifyPatientOwnership.js";
+import { validateDateNotInFuture } from "../utils/validateDateNotInFuture.js";
 
 const ALLOWED_UPDATE_FIELDS = [
   "date",
@@ -38,6 +39,8 @@ const createDailyLog = asyncHandler(async (req, res) => {
   if (!date) {
     throw new ApiError(400, "Date is required to create a daily log");
   }
+
+  validateDateNotInFuture(date, "Daily log date cannot be in the future.");
 
   let dailyLog;
 
@@ -83,6 +86,8 @@ const getPatientLogs = asyncHandler(async (req, res) => {
 
   // range query handling
   if (startDate && endDate) {
+    validateDateNotInFuture(startDate, "Start date cannot be in the future.");
+
     const start = new Date(startDate);
     start.setUTCHours(0, 0, 0, 0);
     const end = new Date(endDate);
@@ -155,13 +160,7 @@ const getDailyLogById = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        dailyLog,
-        "Daily log fetched successfully"
-      )
-    );
+    .json(new ApiResponse(200, dailyLog, "Daily log fetched successfully"));
 });
 
 const updateDailyLog = asyncHandler(async (req, res) => {
@@ -180,6 +179,13 @@ const updateDailyLog = asyncHandler(async (req, res) => {
 
   //verify ownership
   await verifyPatientOwnership(dailyLog.patient, req.user._id);
+
+  if (req.body.date !== undefined) {
+    validateDateNotInFuture(
+      req.body.date,
+      "Daily log date cannot be in the future."
+    );
+  }
 
   let hasUpdate = false;
   ALLOWED_UPDATE_FIELDS.forEach((field) => {

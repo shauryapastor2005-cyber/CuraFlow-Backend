@@ -72,4 +72,7 @@ import dashboardRouter, {
 app.use("/api/v1/dashboard", dashboardRouter);
 app.use("/api/v1/patients/:patientId/dashboard", patientDashboardRouter);
 
+import summaryRouter from "./routes/summary.routes.js";
+app.use("/api/v1/patients/:patientId/summary", summaryRouter);
+
 export default app;

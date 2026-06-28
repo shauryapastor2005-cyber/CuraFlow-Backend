@@ -5,6 +5,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { verifyPatientOwnership } from "../utils/verifyPatientOwnership.js";
+import { validateDateNotInFuture } from "../utils/validateDateNotInFuture.js";
 
 const ALLOWED_UPDATE_FIELDS = [
   "category",
@@ -29,6 +30,8 @@ const createReport = asyncHandler(async (req, res) => {
   if (!reportLocalPath) {
     throw new ApiError(400, "Report file is required");
   }
+
+  validateDateNotInFuture(reportDate, "Report date cannot be in the future.");
 
   const uploadedReport = await uploadOnCloudinary(reportLocalPath);
 
@@ -77,6 +80,8 @@ const getPatientReports = asyncHandler(async (req, res) => {
   }
 
   if (startDate && endDate) {
+    validateDateNotInFuture(startDate, "Start date cannot be in the future.");
+
     const start = new Date(startDate);
     start.setUTCHours(0, 0, 0, 0);
     const end = new Date(endDate);
@@ -140,13 +145,7 @@ const getReportById = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        report,
-        "Report fetched successfully"
-      )
-    );
+    .json(new ApiResponse(200, report, "Report fetched successfully"));
 });
 
 const updateReport = asyncHandler(async (req, res) => {
@@ -162,6 +161,13 @@ const updateReport = asyncHandler(async (req, res) => {
   }
 
   await verifyPatientOwnership(report.patient, req.user._id);
+
+  if (req.body.reportDate !== undefined) {
+    validateDateNotInFuture(
+      req.body.reportDate,
+      "Report date cannot be in the future."
+    );
+  }
 
   let hasUpdate = false;
 

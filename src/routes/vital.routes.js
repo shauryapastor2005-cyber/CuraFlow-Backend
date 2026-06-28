@@ -7,6 +7,7 @@ import {
   deleteVital,
   getTodayVital,
   getWeeklyVitals,
+  getVitalAnalytics,
 } from "../controllers/vital.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -26,6 +27,7 @@ patientVitalRouter.use(verifyJWT);
 
 patientVitalRouter.route("/today").get(getTodayVital);
 patientVitalRouter.route("/weekly").get(getWeeklyVitals);
+patientVitalRouter.route("/analytics").get(getVitalAnalytics);
 
 patientVitalRouter.route("/").post(createVital).get(getPatientVitals);
 

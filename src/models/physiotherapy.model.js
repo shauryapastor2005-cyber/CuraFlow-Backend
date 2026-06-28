@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { normalizeToMidnightUTC } from "../utils/normalizeToMidnightUTC.js";
+import { validateDateNotInFuture } from "../utils/validateDateNotInFuture.js";
 
 //sub schema for exercise
 const exerciseSchema = new Schema(
@@ -74,6 +75,10 @@ const physiotherapySchema = new Schema(
 physiotherapySchema.pre("validate", function () {
   if (this.date) {
     this.date = normalizeToMidnightUTC(this.date);
+    validateDateNotInFuture(
+      this.date,
+      "Physiotherapy session date cannot be in the future."
+    );
   }
 });
 
@@ -83,10 +88,18 @@ physiotherapySchema.pre("findOneAndUpdate", function () {
 
   if (update?.date) {
     update.date = normalizeToMidnightUTC(update.date);
+    validateDateNotInFuture(
+      update.date,
+      "Physiotherapy session date cannot be in the future."
+    );
   }
 
   if (update?.$set?.date) {
     update.$set.date = normalizeToMidnightUTC(update.$set.date);
+    validateDateNotInFuture(
+      update.$set.date,
+      "Physiotherapy session date cannot be in the future."
+    );
   }
 });
 

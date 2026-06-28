@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { normalizeToMidnightUTC } from "../utils/normalizeToMidnightUTC.js";
+import { validateDateNotInFuture } from "../utils/validateDateNotInFuture.js";
 
 const reportSchema = new Schema(
   {
@@ -66,6 +67,10 @@ const reportSchema = new Schema(
 reportSchema.pre("validate", function () {
   if (this.reportDate) {
     this.reportDate = normalizeToMidnightUTC(this.reportDate);
+    validateDateNotInFuture(
+      this.reportDate,
+      "Report date cannot be in the future."
+    );
   }
 });
 
@@ -74,10 +79,18 @@ reportSchema.pre("findOneAndUpdate", function () {
 
   if (update?.reportDate) {
     update.reportDate = normalizeToMidnightUTC(update.reportDate);
+    validateDateNotInFuture(
+      update.reportDate,
+      "Report date cannot be in the future."
+    );
   }
 
   if (update?.$set?.reportDate) {
     update.$set.reportDate = normalizeToMidnightUTC(update.$set.reportDate);
+    validateDateNotInFuture(
+      update.$set.reportDate,
+      "Report date cannot be in the future."
+    );
   }
 });
 

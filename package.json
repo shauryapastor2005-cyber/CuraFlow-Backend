@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/shauryapastor2005-cyber/CuraFlow-Backend#readme",
   "dependencies": {
+    "@google/genai": "^2.10.0",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.10.0",
     "cookie-parser": "^1.4.7",
