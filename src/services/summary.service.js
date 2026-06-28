@@ -8,7 +8,7 @@ import { verifyPatientOwnership } from "../utils/verifyPatientOwnership.js";
 import { buildSummaryPrompt } from "../utils/promptBuilder.js";
 import { generateGeminiResponse } from "./gemini.service.js";
 
-const PROMPT_VERSION = "curaflow-summary-v1";
+const PROMPT_VERSION = "curaflow-summary-v2";
 const MAX_REPORTS = 5;
 
 //helpers for date related functionality
