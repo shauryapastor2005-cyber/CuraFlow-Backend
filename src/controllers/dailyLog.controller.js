@@ -21,7 +21,7 @@ const ALLOWED_UPDATE_FIELDS = [
 const createDailyLog = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   const {
     date,
@@ -80,7 +80,7 @@ const createDailyLog = asyncHandler(async (req, res) => {
 const getPatientLogs = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   const { startDate, endDate, page = 1, limit = 10 } = req.query;
 
@@ -156,7 +156,7 @@ const getDailyLogById = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Daily log not found");
   }
 
-  await verifyPatientOwnership(dailyLog.patient, req.user._id);
+  await verifyPatientOwnership(dailyLog.patient, req.user);
 
   return res
     .status(200)
@@ -178,7 +178,7 @@ const updateDailyLog = asyncHandler(async (req, res) => {
   }
 
   //verify ownership
-  await verifyPatientOwnership(dailyLog.patient, req.user._id);
+  await verifyPatientOwnership(dailyLog.patient, req.user);
 
   if (req.body.date !== undefined) {
     validateDateNotInFuture(
@@ -230,7 +230,7 @@ const deleteDailyLog = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Daily log not found");
   }
 
-  await verifyPatientOwnership(dailyLog.patient, req.user._id);
+  await verifyPatientOwnership(dailyLog.patient, req.user);
 
   dailyLog.isActive = false;
   await dailyLog.save();
@@ -243,7 +243,7 @@ const deleteDailyLog = asyncHandler(async (req, res) => {
 const getTodayLog = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
@@ -270,7 +270,7 @@ const getTodayLog = asyncHandler(async (req, res) => {
 const getWeeklyLogs = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   const endOfToday = new Date();
   endOfToday.setUTCHours(0, 0, 0, 0);
@@ -300,7 +300,7 @@ const getWeeklyLogs = asyncHandler(async (req, res) => {
 const getMissedMedicines = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   const missedLogs = await DailyLog.find({
     patient: patientId,

@@ -27,10 +27,22 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
       throw new ApiError(401, "Invalid Access Token");
     }
 
+    if (!user.isActive) {
+      throw new ApiError(403, "Account no longer exists");
+    }
+
+    if (user.isSuspended) {
+      throw new ApiError(403, "Account has been suspended");
+    }
+
     req.user = user;
 
     next();
   } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
     throw new ApiError(401, error?.message || "invalid access token");
   }
 });

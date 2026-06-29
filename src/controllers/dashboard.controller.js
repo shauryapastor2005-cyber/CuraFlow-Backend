@@ -10,6 +10,13 @@ import { verifyPatientOwnership } from "../utils/verifyPatientOwnership.js";
 
 const getDashboard = asyncHandler(async (req, res) => {
   const caregiverId = req.user._id;
+  const patientFilter = {};
+  const activePatientFilter = { isActive: true };
+
+  if (req.user.role !== "admin") {
+    patientFilter.caregiver = caregiverId;
+    activePatientFilter.caregiver = caregiverId;
+  }
 
   // Dates across health modules are compared at midnight UTC.
   const today = new Date();
@@ -20,10 +27,10 @@ const getDashboard = asyncHandler(async (req, res) => {
 
   const [totalPatients, activePatients, activePatientRecords, recentPatients] =
     await Promise.all([
-      Patient.countDocuments({ caregiver: caregiverId }),
-      Patient.countDocuments({ caregiver: caregiverId, isActive: true }),
-      Patient.find({ caregiver: caregiverId, isActive: true }).select("_id"),
-      Patient.find({ caregiver: caregiverId, isActive: true })
+      Patient.countDocuments(patientFilter),
+      Patient.countDocuments(activePatientFilter),
+      Patient.find(activePatientFilter).select("_id"),
+      Patient.find(activePatientFilter)
         .select("fullname age gender")
         .sort({ createdAt: -1 })
         .limit(5), // recently added 5 patients
@@ -49,32 +56,32 @@ const getDashboard = asyncHandler(async (req, res) => {
     Prescription.countDocuments(medicineScheduleFilter),
     DailyLog.find({
       patient: { $in: patientIds },
-      loggedBy: caregiverId,
+      ...(req.user.role !== "admin" && { loggedBy: caregiverId }),
       date: today,
       medicinesTaken: true,
       isActive: true,
     }).select("patient"),
     Report.countDocuments({
       patient: { $in: patientIds },
-      uploadedBy: caregiverId,
+      ...(req.user.role !== "admin" && { uploadedBy: caregiverId }),
       createdAt: { $gte: today, $lt: tomorrow },
       isActive: true,
     }),
     Vital.countDocuments({
       patient: { $in: patientIds },
-      recordedBy: caregiverId,
+      ...(req.user.role !== "admin" && { recordedBy: caregiverId }),
       date: today,
       isActive: true,
     }),
     Physiotherapy.countDocuments({
       patient: { $in: patientIds },
-      recordedBy: caregiverId,
+      ...(req.user.role !== "admin" && { recordedBy: caregiverId }),
       date: today,
       isActive: true,
     }),
     Report.find({
       patient: { $in: patientIds },
-      uploadedBy: caregiverId,
+      ...(req.user.role !== "admin" && { uploadedBy: caregiverId }),
       isActive: true,
     })
       .sort({ reportDate: -1 })
@@ -115,7 +122,7 @@ const getDashboard = asyncHandler(async (req, res) => {
 const getPatientDashboard = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
-  const patient = await verifyPatientOwnership(patientId, req.user._id);
+  const patient = await verifyPatientOwnership(patientId, req.user);
 
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);

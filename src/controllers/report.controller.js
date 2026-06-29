@@ -17,7 +17,7 @@ const ALLOWED_UPDATE_FIELDS = [
 const createReport = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   const { category, reportName, remarks, reportDate } = req.body;
 
@@ -62,7 +62,7 @@ const createReport = asyncHandler(async (req, res) => {
 const getPatientReports = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   const page = Math.max(1, parseInt(req.query.page) || 1);
   const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
@@ -141,7 +141,7 @@ const getReportById = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Report not found");
   }
 
-  await verifyPatientOwnership(report.patient, req.user._id);
+  await verifyPatientOwnership(report.patient, req.user);
 
   return res
     .status(200)
@@ -160,7 +160,7 @@ const updateReport = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Report not found");
   }
 
-  await verifyPatientOwnership(report.patient, req.user._id);
+  await verifyPatientOwnership(report.patient, req.user);
 
   if (req.body.reportDate !== undefined) {
     validateDateNotInFuture(
@@ -236,7 +236,7 @@ const deleteReport = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Report not found");
   }
 
-  await verifyPatientOwnership(report.patient, req.user._id);
+  await verifyPatientOwnership(report.patient, req.user);
 
   if (report.reportPublicId) {
     try {

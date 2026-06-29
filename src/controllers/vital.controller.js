@@ -20,7 +20,7 @@ const ALLOWED_UPDATE_FIELDS = [
 const createVital = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   const {
     date,
@@ -72,7 +72,7 @@ const createVital = asyncHandler(async (req, res) => {
 const getPatientVitals = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   const { page = 1, limit = 10, startDate, endDate } = req.query;
 
@@ -151,7 +151,7 @@ const getVitalById = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Vital record not found");
   }
 
-  await verifyPatientOwnership(vital.patient, req.user._id);
+  await verifyPatientOwnership(vital.patient, req.user);
 
   return res
     .status(200)
@@ -172,7 +172,7 @@ const updateVital = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Vital record not found");
   }
 
-  await verifyPatientOwnership(vital.patient, req.user._id);
+  await verifyPatientOwnership(vital.patient, req.user);
 
   if (req.body.date !== undefined) {
     validateDateNotInFuture(
@@ -220,7 +220,7 @@ const deleteVital = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Vital record not found");
   }
 
-  await verifyPatientOwnership(vital.patient, req.user._id);
+  await verifyPatientOwnership(vital.patient, req.user);
 
   vital.isActive = false;
   await vital.save();
@@ -233,7 +233,7 @@ const deleteVital = asyncHandler(async (req, res) => {
 const getTodayVital = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   // Dates are stored normalized to midnight UTC, so an equality match is enough
   const today = new Date();
@@ -261,7 +261,7 @@ const getTodayVital = asyncHandler(async (req, res) => {
 const getWeeklyVitals = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
@@ -292,7 +292,7 @@ const getVitalAnalytics = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
   const { range = "week" } = req.query; //default query is week
 
-  const patient = await verifyPatientOwnership(patientId, req.user._id);
+  const patient = await verifyPatientOwnership(patientId, req.user);
 
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);

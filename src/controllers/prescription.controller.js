@@ -33,7 +33,7 @@ const createPrescription = asyncHandler(async (req, res) => {
     throw new ApiError(400, "End date cannot be earlier than start date");
   }
 
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   const prescription = await Prescription.create({
     patient: patientId,
@@ -62,7 +62,7 @@ const getAllPrescriptions = asyncHandler(async (req, res) => {
   const limitNum = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10)); //extract limit number from query params or setting to default 10
   const skip = (pageNum - 1) * limitNum; //calculate skip number
 
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   const filter = { patient: patientId, isActive: true };
 
@@ -107,7 +107,7 @@ const getPrescriptionById = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Prescription not found");
   }
 
-  await verifyPatientOwnership(prescription.patient, req.user._id); //to authenticate caregiver access
+  await verifyPatientOwnership(prescription.patient, req.user); //to authenticate caregiver access
 
   return res
     .status(200)
@@ -128,7 +128,7 @@ const updatePrescription = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Prescription not found");
   }
 
-  await verifyPatientOwnership(prescription.patient, req.user._id);
+  await verifyPatientOwnership(prescription.patient, req.user);
 
   const {
     medicineName,
@@ -180,7 +180,7 @@ const deletePrescription = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Prescription not found");
   }
 
-  await verifyPatientOwnership(prescription.patient, req.user._id);
+  await verifyPatientOwnership(prescription.patient, req.user);
 
   prescription.isActive = false;
   await prescription.save();
@@ -199,7 +199,7 @@ const searchMedicine = asyncHandler(async (req, res) => {
     throw new ApiError(400, "medicine query parameter is required");
   }
 
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   const prescriptions = await Prescription.find({
     patient: patientId,
@@ -224,7 +224,7 @@ const searchMedicine = asyncHandler(async (req, res) => {
 const getCurrentMedicines = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   const today = new Date();
 
@@ -257,7 +257,7 @@ const getMedicineTimeline = asyncHandler(async (req, res) => {
     throw new ApiError(400, "medicine query parameter is required");
   }
 
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   const prescriptions = await Prescription.find({
     patient: patientId,
@@ -287,7 +287,7 @@ const getExpiringMedicines = asyncHandler(async (req, res) => {
   const cutoff = new Date();
   cutoff.setDate(today.getDate() + days);
 
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   const prescriptions = await Prescription.find({
     patient: patientId,

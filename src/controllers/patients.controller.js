@@ -58,9 +58,13 @@ const getAllPatients = asyncHandler(async (req, res) => {
   const skip = (pageNum - 1) * limitNum; //skip is the number of patients to skip
 
   const query = {
-    caregiver: req.user._id, //caregiver is the user who is creating the patient
     isActive: true, //isActive is the status of the patient
   };
+
+  if (req.user.role !== "admin") {
+    query.caregiver = req.user._id; //caregiver is the user who is creating the patient
+  }
+
   //if search is a string and search is not empty, then search for the patient by name
   if (typeof search === "string" && search.trim()) {
     query.fullname = { $regex: search.trim(), $options: "i" };
@@ -94,7 +98,7 @@ const getAllPatients = asyncHandler(async (req, res) => {
 const getPatientById = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
-  const patient = await verifyPatientOwnership(patientId, req.user._id);
+  const patient = await verifyPatientOwnership(patientId, req.user);
 
   return res
     .status(200)
@@ -116,7 +120,7 @@ const updatePatient = asyncHandler(async (req, res) => {
     notes,
   } = req.body;
 
-  const patient = await verifyPatientOwnership(patientId, req.user._id);
+  const patient = await verifyPatientOwnership(patientId, req.user);
 
   if (fullname !== undefined) patient.fullname = fullname;
   if (dateOfBirth !== undefined) patient.dateOfBirth = dateOfBirth;
@@ -139,7 +143,7 @@ const updatePatient = asyncHandler(async (req, res) => {
 const deletePatient = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
-  const patient = await verifyPatientOwnership(patientId, req.user._id);
+  const patient = await verifyPatientOwnership(patientId, req.user);
 
   patient.isActive = false;
   await patient.save();

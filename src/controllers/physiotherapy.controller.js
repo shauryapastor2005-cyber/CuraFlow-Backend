@@ -11,7 +11,7 @@ const createPhysiotherapy = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
   // Verify the requesting user owns this patient record
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   const { date, exercises, notes } = req.body;
 
@@ -56,7 +56,7 @@ const getPatientPhysiotherapy = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
   // Verify ownership
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   const page = Math.max(1, parseInt(req.query.page) || 1);
   const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
@@ -139,7 +139,7 @@ const getPhysiotherapyById = asyncHandler(async (req, res) => {
   }
 
   //verify ownership
-  await verifyPatientOwnership(physiotherapy.patient, req.user._id);
+  await verifyPatientOwnership(physiotherapy.patient, req.user);
 
   return res
     .status(200)
@@ -165,7 +165,7 @@ const updatePhysiotherapy = asyncHandler(async (req, res) => {
   }
 
   // Verify ownership
-  await verifyPatientOwnership(physiotherapy.patient, req.user._id);
+  await verifyPatientOwnership(physiotherapy.patient, req.user);
 
   if (req.body.date !== undefined) {
     validateDateNotInFuture(
@@ -223,7 +223,7 @@ const deletePhysiotherapy = asyncHandler(async (req, res) => {
   }
 
   // Verify ownership
-  await verifyPatientOwnership(physiotherapy.patient, req.user._id);
+  await verifyPatientOwnership(physiotherapy.patient, req.user);
 
   // Soft delete
   physiotherapy.isActive = false;
@@ -240,7 +240,7 @@ const getTodayPhysiotherapy = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
   // Verify ownership
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
@@ -268,7 +268,7 @@ const getWeeklyPhysiotherapy = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
 
   // Verify ownership
-  await verifyPatientOwnership(patientId, req.user._id);
+  await verifyPatientOwnership(patientId, req.user);
 
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);

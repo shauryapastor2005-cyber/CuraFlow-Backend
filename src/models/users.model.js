@@ -33,8 +33,16 @@ const userSchema = new Schema(
     },
     role: {
       type: String,
-      enum: ["caregiver", "doctor", "admin"],
+      enum: ["caregiver", "admin"],
       default: "caregiver",
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    isSuspended: {
+      type: Boolean,
+      default: false,
     },
     password: {
       type: String,

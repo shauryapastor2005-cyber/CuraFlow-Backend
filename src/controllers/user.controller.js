@@ -24,7 +24,7 @@ const generateAccessAndRefreshToken = async (userId) => {
   }
 };
 
-const registerUser = asyncHandler(async (req, res) => {
+const createCaregiver = asyncHandler(async (req, res) => {
   // Validation
   const { fullname, username, email, password } = req.body;
 
@@ -67,6 +67,7 @@ const registerUser = asyncHandler(async (req, res) => {
     coverImage: coverImage?.url || "", // we havent checked coverImage as it is not compulsory
     email: email,
     password: password,
+    role: "caregiver",
   });
 
   const createdUser = await User.findById(user._id).select(
@@ -92,7 +93,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   return res
     .status(201)
-    .json(new ApiResponse(201, createdUser, "User registered successfully"));
+    .json(new ApiResponse(201, createdUser, "Caregiver created successfully"));
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -117,6 +118,15 @@ const loginUser = asyncHandler(async (req, res) => {
   if (!user) {
     throw new ApiError(404, "user does not exist.");
   }
+
+  if (!user.isActive) {
+    throw new ApiError(403, "Account no longer exists");
+  }
+
+  if (user.isSuspended) {
+    throw new ApiError(403, "Account has been suspended");
+  }
+
   const isPasswordCorrect = await user.isPasswordCorrect(password);
 
   if (!isPasswordCorrect) {
@@ -136,6 +146,11 @@ const loginUser = asyncHandler(async (req, res) => {
     httpOnly: true, //security steps
     secure: true,
   };
+
+  let message = "User logged in successfully";
+  if (user.role === "admin") {
+    message = "Admin logged in successfully";
+  }
   return res
     .status(200)
     .cookie("accessToken", accessToken, options)
@@ -148,7 +163,7 @@ const loginUser = asyncHandler(async (req, res) => {
           accessToken,
           refreshToken,
         },
-        "User logged in successfully"
+        message
       )
     );
 });
@@ -211,6 +226,14 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   const user = await User.findById(decodedToken._id);
   if (!user) {
     throw new ApiError(401, "invalid refresh token");
+  }
+
+  if (!user.isActive) {
+    throw new ApiError(403, "Account no longer exists");
+  }
+
+  if (user.isSuspended) {
+    throw new ApiError(403, "Account has been suspended");
   }
 
   if (incommingRefreshToken !== user?.refreshToken) {
@@ -353,8 +376,51 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "Cover image updated successfully"));
 });
 
+const suspendCaregiver = asyncHandler(async (req, res) => {
+  const { caregiverId } = req.params;
+
+  const caregiver = await User.findOne({
+    _id: caregiverId,
+    role: "caregiver",
+    isActive: true,
+  }).select("-password -refreshToken");
+
+  if (!caregiver) {
+    throw new ApiError(404, "Caregiver not found");
+  }
+
+  caregiver.isSuspended = !caregiver.isSuspended;
+  await caregiver.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, caregiver, "Caregiver suspension updated"));
+});
+
+const deleteCaregiver = asyncHandler(async (req, res) => {
+  const { caregiverId } = req.params;
+
+  const caregiver = await User.findOne({
+    _id: caregiverId,
+    role: "caregiver",
+    isActive: true,
+  });
+
+  if (!caregiver) {
+    throw new ApiError(404, "Caregiver not found");
+  }
+
+  caregiver.isActive = false;
+  caregiver.refreshToken = undefined;
+  await caregiver.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Caregiver deleted successfully"));
+});
+
 export {
-  registerUser,
+  createCaregiver,
   loginUser,
   logoutUser,
   refreshAccessToken,
@@ -363,4 +429,6 @@ export {
   updateUserDetails,
   updateUserAvatar,
   updateUserCoverImage,
+  suspendCaregiver,
+  deleteCaregiver,
 };

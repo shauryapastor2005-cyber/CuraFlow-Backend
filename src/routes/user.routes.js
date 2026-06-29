@@ -1,20 +1,25 @@
 import { Router } from "express";
 import {
   changeCurrentPassword,
+  createCaregiver,
+  deleteCaregiver,
   getCurrentUser,
   loginUser,
   logoutUser,
   refreshAccessToken,
-  registerUser,
+  suspendCaregiver,
   updateUserDetails,
   updateUserAvatar,
   updateUserCoverImage,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { verifyRole } from "../middlewares/role.middleware.js";
 const router = Router();
 
 router.route("/register").post(
+  verifyJWT,
+  verifyRole("admin"),
   upload.fields([
     {
       name: "avatar",
@@ -25,7 +30,7 @@ router.route("/register").post(
       maxCount: 1,
     },
   ]),
-  registerUser
+  createCaregiver
 );
 
 router.route("/login").post(loginUser);
@@ -63,4 +68,12 @@ router.route("/update-cover-image").patch(
   ]),
   updateUserCoverImage
 );
+
+router
+  .route("/caregivers/:caregiverId/suspend")
+  .patch(verifyJWT, verifyRole("admin"), suspendCaregiver);
+
+router
+  .route("/caregivers/:caregiverId")
+  .delete(verifyJWT, verifyRole("admin"), deleteCaregiver);
 export default router;
