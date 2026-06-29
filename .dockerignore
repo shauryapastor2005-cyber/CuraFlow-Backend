@@ -1,0 +1,54 @@
+# ─────────────────────────────────────────────
+# .dockerignore — files excluded from Docker build context
+# ─────────────────────────────────────────────
+
+# Dependencies — rebuilt inside the container by npm ci
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Environment files — NEVER include secrets in an image
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.*
+
+# Version control — not needed in container
+.git
+.gitignore
+
+# Docker files — no need to copy these into the image
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose*.yml
+
+# Development tooling
+.eslintrc*
+.prettierrc*
+.editorconfig
+.vscode
+.idea
+*.log
+
+# Temporary upload files — Multer's temp directory
+public/temp/*
+!public/temp/.gitkeep
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Test files
+coverage
+*.test.js
+*.spec.js
+__tests__
+jest.config.*
+
+# CI/CD configuration
+.github
+.travis.yml
+.circleci

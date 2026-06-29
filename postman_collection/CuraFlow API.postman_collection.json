@@ -229,7 +229,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"fullname\":\"John Doe Updated\",\n    \"email\":\"johnupdated@example.com\"\n}",
+              "raw": "{\n    \"fullname\":\"Caregiver2updated\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -288,10 +288,7 @@
                 {
                   "type": "file",
                   "key": "avatar",
-                  "src": [
-                    "/FULL/PATH/TO/new-avatar.jpg",
-                    "/Users/shresthpastor/Downloads/iit_ropar_logo.png"
-                  ]
+                  "src": "/Users/shresthpastor/Downloads/CuraFlowAI_logo.png"
                 }
               ]
             },
@@ -347,7 +344,7 @@
                 {
                   "type": "file",
                   "key": "coverImage",
-                  "src": "/FULL/PATH/TO/new-cover-image.jpg"
+                  "src": "/Users/shresthpastor/Downloads/Designer.png"
                 }
               ]
             },
@@ -397,7 +394,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"oldPassword\":\"password123\",\n    \"newPassword\":\"admin@curaflow\",\n    \"confirmPassword\":\"admin@curaflow\"\n}",
+              "raw": "{\n    \"oldPassword\":\"Caregiver@123\",\n    \"newPassword\":\"Caregiver@123\",\n    \"confirmPassword\":\"Caregiver@123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2974,7 +2971,7 @@
                 {
                   "type": "file",
                   "key": "reportFile",
-                  "src": "/Users/shresthpastor/Downloads/user.png"
+                  "src": "/Users/shresthpastor/Downloads/Designer.png"
                 }
               ]
             },
@@ -4275,22 +4272,6 @@
   ],
   "variable": [
     {
-      "key": "accessToken",
-      "value": ""
-    },
-    {
-      "key": "refreshToken",
-      "value": ""
-    },
-    {
-      "key": "patientId",
-      "value": ""
-    },
-    {
-      "key": "prescriptionId",
-      "value": ""
-    },
-    {
       "key": "logId",
       "value": ""
     },
@@ -4307,7 +4288,19 @@
       "value": ""
     },
     {
-      "key": "caregiverId",
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "patientId",
+      "value": ""
+    },
+    {
+      "key": "patientName",
       "value": ""
     }
   ]
