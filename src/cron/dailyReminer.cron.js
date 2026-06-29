@@ -5,7 +5,7 @@ import { DailyLog } from "../models/dailyLog.model.js";
 import { dailyReminderEmail } from "../templates/dailyReminderEmail.template.js";
 import { sendEmail } from "../services/email.service.js";
 
-const DAILY_REMINDER_CRON = "0 21 * * *"; //runs at 21 hrs 0 mins every day
+const DAILY_REMINDER_CRON = "0 21 * * *"; //runs at 21 hrs 0 mins every dayww
 
 const startDailyReminderCron = () => {
   cron.schedule(DAILY_REMINDER_CRON, async () => {
