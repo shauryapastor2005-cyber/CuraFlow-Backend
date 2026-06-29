@@ -7,6 +7,8 @@ import { ApiError } from "../utils/ApiError.js";
 import { verifyPatientOwnership } from "../utils/verifyPatientOwnership.js";
 import { buildSummaryPrompt } from "../utils/promptBuilder.js";
 import { generateGeminiResponse } from "./gemini.service.js";
+import { sendEmail } from "./email.service.js";
+import { summaryEmailTemplate } from "../templates/summaryEmail.template.js";
 
 const PROMPT_VERSION = "curaflow-summary-v2";
 const MAX_REPORTS = 5;
@@ -237,7 +239,8 @@ const getPhysiotherapyAnalytics = async (patientId, dateFrom) => {
 const generatePatientSummary = async (
   patientId,
   caregiverId,
-  range = "month"
+  range = "month",
+  caregiverEmail
 ) => {
   const dateFrom = getDateRangeStart(range);
 
@@ -299,11 +302,30 @@ const generatePatientSummary = async (
 
   const prompt = buildSummaryPrompt(context);
   const summary = await generateGeminiResponse(prompt);
+  const generatedAt = new Date();
+
+  if (caregiverEmail) {
+    try {
+      const summaryEmailHtml = summaryEmailTemplate({
+        summary,
+        patientName: patient.fullname,
+        generatedAt,
+      });
+
+      await sendEmail({
+        to: caregiverEmail,
+        subject: `CuraFlow AI Summary for ${patient.fullname}`,
+        html: summaryEmailHtml,
+      });
+    } catch (error) {
+      console.error("Failed to send summary email:", error.message);
+    }
+  }
 
   return {
     patientId,
     summary,
-    generatedAt: new Date(),
+    generatedAt,
     promptVersion: PROMPT_VERSION,
   };
 };

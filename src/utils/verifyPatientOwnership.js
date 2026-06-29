@@ -2,7 +2,6 @@ import { Patient } from "../models/patients.model.js";
 import { ApiError } from "./ApiError.js";
 //utility function to verify patient ownership
 const verifyPatientOwnership = async (patientId, caregiverId) => {
-  // console.log("Checking ownership:", { patientId, caregiverId });
   const patient = await Patient.findOne({
     _id: patientId,
     caregiver: caregiverId,

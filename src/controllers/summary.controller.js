@@ -8,7 +8,8 @@ const createPatientSummary = asyncHandler(async (req, res) => {
   const summary = await generatePatientSummary(
     patientId,
     req.user._id,
-    req.query.range
+    req.query.range,
+    req.user.email
   );
 
   return res

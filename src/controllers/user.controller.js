@@ -3,6 +3,8 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { sendEmail } from "../services/email.service.js";
+import { welcomeEmailTemplate } from "../templates/welcomeEmail.template.js";
 import jwt from "jsonwebtoken";
 
 const generateAccessAndRefreshToken = async (userId) => {
@@ -25,7 +27,7 @@ const generateAccessAndRefreshToken = async (userId) => {
 const registerUser = asyncHandler(async (req, res) => {
   // Validation
   const { fullname, username, email, password } = req.body;
-  console.log("email: ", email);
+
   if (
     [fullname, username, email, password].some(
       (field) => !field || field.trim() === ""
@@ -72,6 +74,20 @@ const registerUser = asyncHandler(async (req, res) => {
   );
   if (!createdUser) {
     throw new ApiError(500, "Something went wrong while registering the user");
+  }
+
+  try {
+    const welcomeEmailHtml = welcomeEmailTemplate({
+      fullname: createdUser.fullname,
+    });
+
+    await sendEmail({
+      to: createdUser.email,
+      subject: "Welcome to CuraFlow AI",
+      html: welcomeEmailHtml,
+    });
+  } catch (error) {
+    console.error("Failed to send welcome email:", error.message);
   }
 
   return res
@@ -163,7 +179,7 @@ const logoutUser = asyncHandler(async (req, res) => {
   );
 
   const options = {
-    httpOnly: true, //security steps
+    httpOnly: true, //security step
     secure: true,
   };
 
