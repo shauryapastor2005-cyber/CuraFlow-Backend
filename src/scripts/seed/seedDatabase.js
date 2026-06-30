@@ -13,6 +13,7 @@ import { seedDailyLogs } from "./seedDailyLogs.js";
 import { seedVitals } from "./seedVitals.js";
 import { seedPhysiotherapySessions } from "./seedPhysiotherapySessions.js";
 import { seedReports } from "./seedReports.js";
+import { createBenchmarkVitals } from "./createBenchmarkVitals.js"; //Benchmark vitals
 
 const seedDatabase = async () => {
   let exitCode = 0;
@@ -42,6 +43,7 @@ const seedDatabase = async () => {
       dailyLogs,
       recoveryCurves
     );
+    await createBenchmarkVitals();
     const physiotherapySessions = await seedPhysiotherapySessions(
       patientProfiles,
       patients,

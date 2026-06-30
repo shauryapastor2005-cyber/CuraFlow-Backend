@@ -33,7 +33,7 @@ const seedDailyLogs = async (
 
         if (day > 7 && day <= 30) stageName = "firstMonth";
         if (day > 30 && day <= 180) stageName = "sixMonths";
-        if (day > 180) stageName = "oneYear";
+        if (day > 180 && day < 366) stageName = "oneYear";
 
         const curve = recoveryCurves[profile.severity][stageName];
         const date = new Date();
@@ -55,14 +55,11 @@ const seedDailyLogs = async (
         const exerciseChance =
           Math.floor(
             Math.random() *
-              (curve.exerciseAdherence.max -
-                curve.exerciseAdherence.min +
-                1)
+              (curve.exerciseAdherence.max - curve.exerciseAdherence.min + 1)
           ) + curve.exerciseAdherence.min;
         const sleepHours =
-          Math.floor(
-            Math.random() * (curve.sleep.max - curve.sleep.min + 1)
-          ) + curve.sleep.min;
+          Math.floor(Math.random() * (curve.sleep.max - curve.sleep.min + 1)) +
+          curve.sleep.min;
 
         let appetite = "Normal";
         if (curve.appetite === "Poor" || curve.appetite === "Low") {
