@@ -539,7 +539,7 @@ Observed execution statistics:
 
 **Execution Plan Screenshot**
 
-![With Index](docs/benchmark/with-index-executionStats.png)
+![With Index]<img src="docs/benchmark/with-index-executionStats.png" width="700" alt="With Index Benchmark">
 
 ---
 
@@ -568,7 +568,7 @@ Observed execution statistics:
 
 **Execution Plan Screenshot**
 
-![Without Index](docs/benchmark/without-index-executionStats.png)
+![Without Index]<img src="docs/benchmark/without-index-executionStats.png" width="700" alt="Without Index Benchmark">
 
 ---
 
