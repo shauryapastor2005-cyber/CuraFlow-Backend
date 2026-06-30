@@ -7,7 +7,7 @@ yarn-error.log*
 .env
 .env.local
 .env.*
-!.env.example
+!.env.sample
 
 # Temporary uploads (Multer temp directory)
 public/temp/*
@@ -27,3 +27,5 @@ Thumbs.db
 
 # Test coverage
 coverage/
+
+.DS_Store
