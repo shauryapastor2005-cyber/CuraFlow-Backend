@@ -4,7 +4,7 @@ CuraFlow Backend is an Express and MongoDB API for a caregiver-oriented healthca
 
 The backend is organized around an MVC-style structure with route modules, controllers, Mongoose models, middleware, service modules, utilities, cron jobs, and seed scripts. It is intended for caregiver workflows where patient recovery data needs to be recorded, queried, summarized, and monitored over time.
 
-**Backend API:** https://curaflow-backend-pfrn.onrender.com](https://curaflow-backend-pfrn.onrender.com/
+**Backend API:** https://curaflow-backend-pfrn.onrender.com
 
 > **Note:** The backend is hosted on Render's free tier. If the service has been idle, the first request may take 30–60 seconds while Render wakes up the server.
 
