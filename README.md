@@ -127,6 +127,10 @@ Controllers contain request-level logic. Services handle AI summary generation a
 .
 ├── Dockerfile
 ├── README.md
+├── docs
+│   └── benchmark
+│       ├── with-index-executionStats.png
+│       └── without-index-executionStats.png
 ├── package.json
 ├── package-lock.json
 ├── postman_collection
