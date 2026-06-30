@@ -458,6 +458,129 @@ Aggregation pipelines calculate values such as:
 - Sleep and water intake averages.
 - Physiotherapy completion percentage and average duration.
 
+## MongoDB Index Performance Benchmark
+
+To validate the effectiveness of the compound index on the `vitals` collection, the aggregation pipeline powering the Vital Analytics endpoint was benchmarked using MongoDB's `explain("executionStats")`.
+
+### Test Dataset
+
+The benchmark was performed on a seeded database containing approximately:
+
+- 20 Patients
+- 2,700+ Daily Logs
+- 2,700+ Vitals
+- 1,200+ Physiotherapy Sessions
+
+The aggregation queried a single patient's vitals over a specified date range.
+
+### Aggregation Benchmark Command
+
+```javascript
+db.vitals.aggregate([
+  {
+    $match: {
+      patient: testPatientId,
+      isActive: true,
+      date: {
+        $gte: ISODate("2024-01-01"),
+        $lte: ISODate("2026-12-31")
+      }
+    }
+  },
+  {
+    $group: {
+      _id: null,
+      totalRecords: { $sum: 1 },
+      averageBloodPressureSystolic: { $avg: "$bloodPressureSystolic" },
+      averageBloodPressureDiastolic: { $avg: "$bloodPressureDiastolic" },
+      averageHeartRate: { $avg: "$heartRate" },
+      averageTemperature: { $avg: "$temperature" },
+      averageOxygenSaturation: { $avg: "$oxygenSaturation" },
+      averageBloodSugar: { $avg: "$bloodSugar" },
+      averageWeight: { $avg: "$weight" }
+    }
+  },
+  {
+    $project: {
+      _id: 0,
+      totalRecords: 1,
+      averageBloodPressure: {
+        systolic: "$averageBloodPressureSystolic",
+        diastolic: "$averageBloodPressureDiastolic"
+      },
+      averageHeartRate: 1,
+      averageTemperature: 1,
+      averageOxygenSaturation: 1,
+      averageBloodSugar: 1,
+      averageWeight: 1
+    }
+  }
+]).explain("executionStats")
+```
+
+---
+
+### Benchmark 1 — With Compound Index
+
+Compound Index:
+
+```javascript
+{ patient: 1, date: 1 }
+```
+
+Observed execution statistics:
+
+| Metric | Result |
+|---------|--------:|
+| Execution Time | **1 ms** |
+| Index Keys Examined | **7** |
+| Documents Examined | **7** |
+| Documents Returned | **1** |
+
+**Execution Plan Screenshot**
+
+![With Index](docs/benchmark/with-index-executionStats.png)
+
+---
+
+### Benchmark 2 — Without Index
+
+The compound index was temporarily removed:
+
+```javascript
+db.vitals.dropIndex({ patient: 1, date: 1 })
+```
+
+The exact same aggregation was executed again using:
+
+```javascript
+.explain("executionStats")
+```
+
+Observed execution statistics:
+
+| Metric | Result |
+|---------|--------:|
+| Execution Time | **13 ms** |
+| Index Keys Examined | **0** |
+| Documents Examined | **12,794** |
+| Documents Returned | **1** |
+
+**Execution Plan Screenshot**
+
+![Without Index](docs/benchmark/without-index-executionStats.png)
+
+---
+
+### Performance Improvement
+
+| Metric | Without Index | With Index | Improvement |
+|---------|--------------:|-----------:|------------:|
+| Documents Examined | 12,794 | 7 | **1,828× fewer documents scanned** |
+| Query Latency | 13 ms | 1 ms | **13× faster** |
+
+The benchmark demonstrates that the compound index allows MongoDB to locate only the required documents instead of scanning the entire collection, significantly improving the performance of healthcare analytics queries.
+
 ## Seeder
 
 The project includes a master seed script at `src/scripts/seed/seedDatabase.js` and a package script:
